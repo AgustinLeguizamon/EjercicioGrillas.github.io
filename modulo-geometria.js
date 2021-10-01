@@ -29,25 +29,29 @@
 var superficie3D;
 var mallaDeTriangulos;
 
-var filas=4;
-var columnas=4;
+var filas=30;
+var columnas=30;
 
-var SUPERFICIES = ["plano","esfera","tubosenoidal"];
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
+    function(m,key,value) {
+      vars[key] = value;
+    });
+    return vars;
+}
 
-/*Modificar el indice para elegir la superficie*/
-var INDICE_SUPERFICIE = 0;
-
-var SUPERFICIE = SUPERFICIES[INDICE_SUPERFICIE];
+var forma= getUrlVars()["forma"]
 
 function crearGeometria(){
     
     superficie3D = null;
-    switch(SUPERFICIE){
+    switch(forma){
         case "plano":
             superficie3D = new Plano(3,3);    
             break;
         case "esfera":
-            superficie3D = new Esfera(3);
+            superficie3D = new Esfera(2);
             break;
         default:
             throw "Superficie: <" + SUPERFICIE + "> no existe"
@@ -66,13 +70,15 @@ function dibujarGeometria(){
 function Plano(ancho,largo){
 
     this.getPosicion=function(u,v){
-
+        /*supon u,v valores entre 0 y 1*/
         var x=(u-0.5)*ancho;
         var z=(v-0.5)*largo;
         return [x,0,z];
     }
 
     this.getNormal=function(u,v){
+        /*plano perpendicular al eje y*/
+        /*podria ser un parametro como ancho y largo*/
         return [0,1,0];
     }
 
@@ -84,13 +90,22 @@ function Plano(ancho,largo){
 function Esfera(radio){
 
     this.getPosicion=function(u,v){
-        var x= Math.cos(u) * radio;
-        var z= Math.cos(u) * radio;
-        var y= Math.sin(v) * radio;
+        /*latitud -pi/2 y pi/2 o entre 0 y pi
+        longitud entrfe 0 y 360*/
+        var longitud = u * 2 * Math.PI;
+        var latitud = v * Math.PI;
+        var x = radio * Math.cos(longitud) * Math.sin(latitud);
+        var y = radio * Math.sin(longitud) * Math.sin(latitud);
+        var z = radio * Math.cos(latitud);
+        
         return [x,y,z];
     }
 
     this.getNormal=function(u,v){
+        //si parametro v es la latitud
+        // si v esta por encima del maximo
+        // puede darte negtivo la resta
+        let p1 = this.getPosicion(u,v)
         return [0,1,0];
     }
 
@@ -99,6 +114,37 @@ function Esfera(radio){
     }
 }
 
+function TuboSenoidal(radio){
+
+    this.getPosicion=function(u,v){
+        var x = Math.cos(u) * radio;
+        var z = Math.sin(v) * radio;
+        
+        return [x,0,z];
+    }
+
+    this.getNormal=function(u,v){
+        //mientras mas chico el delta mejor aproxima
+        //para un punto determinado u,v
+        // haciendo p1 - p0 y p2 - p0
+        // ortogonales p1 y p0
+        // ortogonales p2 y p0
+        // y a eso el producto vectorial
+        let p0 = this.getPosicion(u,v)
+        let p1 = this.getPosicion(u+0.001,v)
+        let p2 = this.getPosicion(u,v+0.001)
+        return [0,1,0];
+    }
+
+    this.getCoordenadasTextura=function(u,v){
+        return [u,v];
+    }
+}
+
+// Truco para calcular normal de superficie
+/*agarrar y decir para sierta posicion
+a partir del getPosicion
+podemos tomar tres puntos - uno determinado otro corrido*/ 
 
 
 
@@ -108,9 +154,11 @@ function generarSuperficie(superficie,filas,columnas){
     normalBuffer = [];
     uvBuffer = [];
 
-    for (var i=0; i <= filas; i++) {
-        for (var j=0; j <= columnas; j++) {
+    for (var i=0; i < filas; i++) {
+        for (var j=0; j < columnas; j++) {
 
+            /*esto me da un valor entre 0 y 1
+            si quiero que genera superficie de una esfera*/
             var u=j/columnas;
             var v=i/filas;
 
