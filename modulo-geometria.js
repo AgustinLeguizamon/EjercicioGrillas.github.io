@@ -32,11 +32,27 @@ var mallaDeTriangulos;
 var filas=4;
 var columnas=4;
 
+var SUPERFICIES = ["plano","esfera","tubosenoidal"];
+
+/*Modificar el indice para elegir la superficie*/
+var INDICE_SUPERFICIE = 0;
+
+var SUPERFICIE = SUPERFICIES[INDICE_SUPERFICIE];
 
 function crearGeometria(){
-        
-
-    superficie3D=new Plano(3,3);
+    
+    superficie3D = null;
+    switch(SUPERFICIE){
+        case "plano":
+            superficie3D = new Plano(3,3);    
+            break;
+        case "esfera":
+            superficie3D = new Esfera(3);
+            break;
+        default:
+            throw "Superficie: <" + SUPERFICIE + "> no existe"
+    }
+    
     mallaDeTriangulos=generarSuperficie(superficie3D,filas,columnas);
     
 }
@@ -54,6 +70,24 @@ function Plano(ancho,largo){
         var x=(u-0.5)*ancho;
         var z=(v-0.5)*largo;
         return [x,0,z];
+    }
+
+    this.getNormal=function(u,v){
+        return [0,1,0];
+    }
+
+    this.getCoordenadasTextura=function(u,v){
+        return [u,v];
+    }
+}
+
+function Esfera(radio){
+
+    this.getPosicion=function(u,v){
+        var x= Math.cos(u) * radio;
+        var z= Math.cos(u) * radio;
+        var y= Math.sin(v) * radio;
+        return [x,y,z];
     }
 
     this.getNormal=function(u,v){
