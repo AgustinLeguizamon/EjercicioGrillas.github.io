@@ -53,6 +53,9 @@ function crearGeometria(){
         case "esfera":
             superficie3D = new Esfera(2);
             break;
+        case "cilindro":
+            superficie3D = new Cilindro(2,2);
+            break;
         default:
             throw "Superficie: <" + SUPERFICIE + "> no existe"
     }
@@ -114,13 +117,15 @@ function Esfera(radio){
     }
 }
 
-function TuboSenoidal(radio){
+function Cilindro(radio, altura){
 
     this.getPosicion=function(u,v){
-        var x = Math.cos(u) * radio;
-        var z = Math.sin(v) * radio;
-        
-        return [x,0,z];
+        var longitud = u * 2 * Math.PI
+        var x = radio * Math.cos(longitud);
+        var y = v * altura;
+        var z = radio * Math.sin(longitud);
+
+        return [x,y,z];
     }
 
     this.getNormal=function(u,v){
