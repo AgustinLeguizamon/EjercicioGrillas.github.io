@@ -56,8 +56,11 @@ function crearGeometria(){
         case "cilindro":
             superficie3D = new Cilindro(2,2);
             break;
+        case "tubo_senoidal":
+            superficie3D = new TuboSenoidal(0.1,5,1,2);
+            break;
         default:
-            throw "Superficie: <" + SUPERFICIE + "> no existe"
+            throw "Superficie: <" + forma + "> no existe"
     }
     
     mallaDeTriangulos=generarSuperficie(superficie3D,filas,columnas);
@@ -129,6 +132,28 @@ function Cilindro(radio, altura){
     }
 
     this.getNormal=function(u,v){
+        return [0,1,0];
+    }
+
+    this.getCoordenadasTextura=function(u,v){
+        return [u,v];
+    }
+}
+
+function TuboSenoidal(amplitud_onda, longitud_onda, radio, altura){
+
+    this.getPosicion=function(u,v){
+        var theta = u * 2 * Math.PI
+        var delta = amplitud_onda * Math.sin(v * Math.PI * 2 * longitud_onda)
+        //var delta = 0
+        var y = v * altura;
+        var x = (radio + delta) * Math.cos(theta);
+        var z = (radio + delta) * Math.sin(theta);
+
+        return [x,y,z];
+    }
+
+    this.getNormal=function(u,v){
         //mientras mas chico el delta mejor aproxima
         //para un punto determinado u,v
         // haciendo p1 - p0 y p2 - p0
@@ -162,8 +187,7 @@ function generarSuperficie(superficie,filas,columnas){
     for (var i=0; i < filas; i++) {
         for (var j=0; j < columnas; j++) {
 
-            /*esto me da un valor entre 0 y 1
-            si quiero que genera superficie de una esfera*/
+            /*esto me da un valor entre 0 y 1*/
             var u=j/columnas;
             var v=i/filas;
 
